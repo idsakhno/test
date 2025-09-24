@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+  />
+  <title>Our Little Bistro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Parisienne&family=Marcellus&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #1d1a19;
+      height: 100%;
+      color: #fff;
+      touch-action: none;
+    }
+    #appCanvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(1200px 900px at 50% 0%, #2b2624, #1d1a19 70%);
+    }
+    /* Hidden file input, triggered by canvas button */
+    #imageInput {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      width: 0; height: 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="appCanvas"></canvas>
+  <input type="file" accept="image/*" id="imageInput">
+  <script>
+  // ===== Configuration and Theme =====
+  const CONFIG = {
+    partnerName: "Bella", // Change to her name
+    adminPasscode: "1234",
+    loveMessage: "Your tiramisu is being prepared with love 💕",
+    currency: "£", // British locale
+    palette: {
+      bgDark: "#1d1a19",
+      bgMid: "#2b2624",
+      accent: "#c86b6b",
+      gold: "#d8b16b",
+      cream: "#f7e9d7",
+      leaf: "#6aa57a",
+      rose: "#b85a67",
+      textLight: "#f5f2ef",
+      textSoft: "#e8ddd1"
+    },
+    fonts: {
+      script: "48px Parisienne, cursive",
+      title: "26px Marcellus, serif",
+      label: "18px Inter, sans-serif",
+      body: "16px Inter, sans-serif"
+    }
+  };
+
+  // ===== Canvas Setup =====
+  const canvas = document.getElementById("appCanvas");
+  const ctx = canvas.getContext("2d");
+  let W = window.innerWidth;
+  let H = window.innerHeight;
+  function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.floor(W * devicePixelRatio);
+    canvas.height = Math.floor(H * devicePixelRatio);
+    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    draw();
+  }
+  window.addEventListener("resize", resize);
+
+  // Touch/Pointer helpers
+  const pointer = { x: 0, y: 0, down: false };
+  canvas.addEventListener("pointerdown", (e) => {
+    pointer.down = true;
+    const rect = canvas.getBoundingClientRect();
+    pointer.x = e.clientX - rect.left;
+    pointer.y = e.clientY - rect.top;
+    handleTap(pointer.x, pointer.y);
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    pointer.x = e.clientX - rect.left;
+    pointer.y = e.clientY - rect.top;
+  });
+  canvas.addEventListener("pointerup", () => (pointer.down = false));
+
+  // Arrow keys & swipe for game
+  const keys = { left: false, right: false, up: false, down: false };
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") keys.left = true;
+    if (e.key === "ArrowRight") keys.right = true;
+    if (e.key === "ArrowUp") keys.up = true;
+    if (e.key === "ArrowDown") keys.down = true;
+  });
+  window.addEventListener("keyup", (e) => {
+    if (e.key === "ArrowLeft") keys.left = false;
+    if (e.key === "ArrowRight") keys.right = false;
+    if (e.key === "ArrowUp") keys.up = false;
+    if (e.key === "ArrowDown") keys.down = false;
+  });
+  // Simple swipe control
+  let swipeStart = null;
+  canvas.addEventListener("touchstart", (e) => {
+    const t = e.touches[0];
+    swipeStart = { x: t.clientX, y: t.clientY };
+  });
+  canvas.addEventListener("touchmove", (e) => {
+    if (!swipeStart) return;
+    const t = e.touches[0];
+    const dx = t.clientX - swipeStart.x;
+    const dy = t.clientY - swipeStart.y;
+    keys.left = dx < -20;
+    keys.right = dx > 20;
+    keys.up = dy < -20;
+    keys.down = dy > 20;
+  });
+  canvas.addEventListener("touchend", () => {
+    swipeStart = null;
+    keys.left = keys.right = keys.up = keys.down = false;
+  });
+
+  // ===== Storage & Data Models =====
+  const store = {
+    get(key, def) {
+      try {
+        const val = localStorage.getItem(key);
+        return val ? JSON.parse(val) : def;
+      } catch { return def; }
+    },
+    set(key, val) {
+      localStorage.setItem(key, JSON.stringify(val));
+    }
+  };
+
+  // Menu items structure
+  // { id, name, description, price, imageDataUrl, specialOfferText }
+  let menu = store.get("menuItems", [
+    {
+      id: "1",
+      name: "Tiramisu della Casa",
+      description: "Layers of espresso-soaked savoiardi, mascarpone cream, and cocoa.",
+      price: 7.5,
+      imageDataUrl: null,
+      specialOfferText: "Tonight’s Sweetheart Special"
+    },
+    {
+      id: "2",
+      name: "Risotto al Funghi",
+      description: "Creamy arborio rice, porcini mushrooms, parmesan, and truffle aroma.",
+      price: 14.0,
+      imageDataUrl: null,
+      specialOfferText: ""
+    },
+    {
+      id: "3",
+      name: "Coq au Vin",
+      description: "Tender chicken braised in Burgundy, lardons, mushrooms, and pearl onions.",
+      price: 16.5,
+      imageDataUrl: null,
+      specialOfferText: "Chef’s Romance Pick"
+    }
+  ]);
+
+  let favorites = store.get("favorites", []);
+  let orders = store.get("orders", []); // { id, itemId, ts }
+  let promotions = store.get("promotions", []); // [{ text, ts }]
+
+  // ===== Scenes =====
+  const Scene = {
+    HOME: "home",
+    MENU: "menu",
+    ITEM: "item",
+    FAVORITES: "favorites",
+    HISTORY: "history",
+    ADMIN_LOGIN: "admin_login",
+    ADMIN_PANEL: "admin_panel",
+    GAME: "game"
+  };
+
+  let scene = Scene.HOME;
+  let selectedItemId = null;
+
+  // ===== UI Helpers =====
+  function drawBg() {
+    // Soft vignette + texture
+    ctx.fillStyle = CONFIG.palette.bgMid;
+    ctx.fillRect(0, 0, W, H);
+    // Candle-like glow
+    const grd = ctx.createRadialGradient(W * 0.5, H * 0.15, 10, W * 0.5, H * 0.15, Math.max(W, H));
+    grd.addColorStop(0, "rgba(216, 177, 107, 0.25)");
+    grd.addColorStop(1, "rgba(29, 26, 25, 0.5)");
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, W, H);
+    // Subtle noise speckles
+    for (let i = 0; i < 80; i++) {
+      const x = Math.random() * W;
+      const y = Math.random() * H;
+      ctx.fillStyle = "rgba(255,255,255,0.03)";
+      ctx.fillRect(x, y, 1, 1);
+    }
+  }
+
+  function drawHeader(title, subtitle) {
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.font = CONFIG.fonts.script;
+    ctx.fillStyle = CONFIG.palette.cream;
+    ctx.fillText(`For ${CONFIG.partnerName}`, W / 2, 18);
+    ctx.font = CONFIG.fonts.title;
+    ctx.fillStyle = CONFIG.palette.gold;
+    ctx.fillText(title, W / 2, 78);
+    if (subtitle) {
+      ctx.font = CONFIG.fonts.label;
+      ctx.fillStyle = CONFIG.palette.textSoft;
+      ctx.fillText(subtitle, W / 2, 112);
+    }
+  }
+
+  function button(text, x, y, w, h, accent=false) {
+    // Glow border
+    ctx.strokeStyle = accent ? CONFIG.palette.accent : CONFIG.palette.gold;
+    ctx.lineWidth = 2;
+    ctx.fillStyle = "rgba(31,28,26,0.7)";
+    roundRect(x, y, w, h, 12, true, true);
+    // Text
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = CONFIG.fonts.label;
+    ctx.fillStyle = CONFIG.palette.textLight;
+    ctx.fillText(text, x + w/2, y + h/2);
+    return {x, y, w, h, text};
+  }
+
+  function roundRect(x, y, w, h, r, fill, stroke) {
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.arcTo(x+w, y, x+w, y+h, r);
+    ctx.arcTo(x+w, y+h, x, y+h, r);
+    ctx.arcTo(x, y+h, x, y, r);
+    ctx.arcTo(x, y, x+w, y, r);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
+  }
+
+  function hit(b, px, py) {
+    return px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h;
+  }
+
+  // ===== Scene Drawers =====
+  let buttons = []; // collected per frame for hit detection
+
+  function drawHome() {
+    drawBg();
+    drawHeader("Our Little Bistro", "Curated just for you");
+    buttons = [];
+    const bw = Math.min(W * 0.8, 340);
+    const bh = 46;
+    let y = 160;
+    const gap = 14;
+    buttons.push(button("Menu", (W-bw)/2, y, bw, bh)); y += bh + gap;
+    buttons.push(button("Favorites", (W-bw)/2, y, bw, bh)); y += bh + gap;
+    buttons.push(button("Order history", (W-bw)/2, y, bw, bh)); y += bh + gap;
+    buttons.push(button("Mini-game", (W-bw)/2, y, bw, bh, true)); y += bh + gap;
+    buttons.push(button("Admin", (W-bw)/2, y, bw, bh));
+    // Footer hearts
+    drawHearts();
+  }
+
+  function drawHearts() {
+    for (let i = 0; i < 18; i++) {
+      const x = (i / 18) * W + Math.sin(i) * 10;
+      const y = H - 30 - Math.cos(i*2) * 6;
+      ctx.fillStyle = "rgba(200,107,107,0.6)";
+      drawHeart(x, y, 8);
+    }
+  }
+
+  function drawHeart(x, y, s) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.bezierCurveTo(x - s, y - s, x - s*2, y + s/2, x, y + s*1.6);
+    ctx.bezierCurveTo(x + s*2, y + s/2, x + s, y - s, x, y);
+    ctx.fill();
+  }
+
+  function drawMenu() {
+    drawBg();
+    drawHeader("Menu", "Tonight’s selection");
+    buttons = [];
+    const itemH = 120;
+    const pad = 16;
+    let y = 140;
+    menu.forEach((m, idx) => {
+      const x = pad;
+      const w = W - pad*2;
+      // Card
+      ctx.fillStyle = "rgba(36,32,30,0.85)";
+      roundRect(x, y, w, itemH, 14, true, false);
+      // Image
+      if (m.imageDataUrl) drawImageCircle(m.imageDataUrl, x+58, y+60, 44);
+      else drawPlateIcon(x+58, y+60, 44);
+      // Text
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.font = CONFIG.fonts.title;
+      ctx.fillStyle = CONFIG.palette.cream;
+      ctx.fillText(m.name, x+110, y+14);
+      ctx.font = CONFIG.fonts.body;
+      ctx.fillStyle = CONFIG.palette.textSoft;
+      wrapText(m.description, x+110, y+48, w-210, 18);
+      // Price & offer
+      ctx.textAlign = "right";
+      ctx.textBaseline = "bottom";
+      ctx.font = CONFIG.fonts.label;
+      ctx.fillStyle = CONFIG.palette.gold;
+      ctx.fillText(`${CONFIG.currency}${m.price.toFixed(2)}`, x+w-14, y+itemH-12);
+      if (m.specialOfferText) {
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillStyle = CONFIG.palette.rose;
+        ctx.fillText(m.specialOfferText, x+110, y+itemH-12);
+      }
+      const btn = button("View", x+w-96, y+itemH-50, 82, 36);
+      btn._itemId = m.id;
+      buttons.push(btn);
+      y += itemH + 12;
+    });
+    buttons.push(button("Back", 16, H-58, 100, 42));
+  }
+
+  function drawItem() {
+    const m = menu.find(x => x.id === selectedItemId);
+    if (!m) { scene = Scene.MENU; return; }
+    drawBg();
+    drawHeader(m.name, "A little taste of love");
+    buttons = [];
+    // Image
+    if (m.imageDataUrl) drawImageLarge(m.imageDataUrl, W/2, 180, Math.min(W*0.6, 340), 180);
+    else drawPlateIcon(W/2, 180, 80);
+    // Description
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.font = CONFIG.fonts.body;
+    ctx.fillStyle = CONFIG.palette.textLight;
+    wrapText(m.description, W*0.1, 330, W*0.8, 20, "center");
+    // Price
+    ctx.font = CONFIG.fonts.title;
+    ctx.fillStyle = CONFIG.palette.gold;
+    ctx.fillText(`${CONFIG.currency}${m.price.toFixed(2)}`, W/2, 400);
+    // Offer
+    if (m.specialOfferText) {
+      ctx.font = CONFIG.fonts.label;
+      ctx.fillStyle = CONFIG.palette.rose;
+      ctx.fillText(m.specialOfferText, W/2, 434);
+    }
+    const bw = Math.min(W * 0.8, 340);
+    buttons.push(button("Add to favorites", (W-bw)/2, 480, bw, 46));
+    buttons.push(button("Order now", (W-bw)/2, 536, bw, 50, true));
+    buttons.push(button("Back to menu", 16, H-58, 150, 42));
+  }
+
+  function drawFavorites() {
+    drawBg();
+    drawHeader("Favorites", "Because you loved these");
+    buttons = [];
+    const favs = favorites.map(id => menu.find(m => m.id === id)).filter(Boolean);
+    if (favs.length === 0) {
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.font = CONFIG.fonts.body;
+      ctx.fillStyle = CONFIG.palette.textSoft;
+      ctx.fillText("No favorites yet. Explore the menu!", W/2, 150);
+    } else {
+      let y = 140;
+      favs.forEach(m => {
+        const x = 16; const w = W - 32; const h = 100;
+        ctx.fillStyle = "rgba(36,32,30,0.85)";
+        roundRect(x, y, w, h, 14, true, false);
+        if (m.imageDataUrl) drawImageCircle(m.imageDataUrl, x+54, y+50, 38);
+        else drawPlateIcon(x+54, y+50, 38);
+        ctx.textAlign = "left"; ctx.textBaseline = "top";
+        ctx.font = CONFIG.fonts.title; ctx.fillStyle = CONFIG.palette.cream;
+        ctx.fillText(m.name, x+100, y+16);
+        ctx.font = CONFIG.fonts.label; ctx.fillStyle = CONFIG.palette.gold;
+        ctx.fillText(`${CONFIG.currency}${m.price.toFixed(2)}`, x+100, y+56);
+        const btn = button("View", x+w-96, y+h-44, 82, 36);
+        btn._itemId = m.id;
+        buttons.push(btn);
+        y += h + 10;
+      });
+    }
+    buttons.push(button("Back", 16, H-58, 100, 42));
+  }
+
+  function drawHistory() {
+    drawBg();
+    drawHeader("Order history", "Moments to revisit");
+    buttons = [];
+    if (orders.length === 0) {
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.font = CONFIG.fonts.body;
+      ctx.fillStyle = CONFIG.palette.textSoft;
+      ctx.fillText("No orders yet — let’s make a memory.", W/2, 150);
+    } else {
+      let y = 140;
+      orders.slice().reverse().forEach(o => {
+        const m = menu.find(x => x.id === o.itemId);
+        if (!m) return;
+        const x = 16; const w = W - 32; const h = 100;
+        ctx.fillStyle = "rgba(36,32,30,0.85)";
+        roundRect(x, y, w, h, 14, true, false);
+        if (m.imageDataUrl) drawImageCircle(m.imageDataUrl, x+54, y+50, 38);
+        else drawPlateIcon(x+54, y+50, 38);
+        ctx.textAlign = "left"; ctx.textBaseline = "top";
+        ctx.font = CONFIG.fonts.title; ctx.fillStyle = CONFIG.palette.cream;
+        ctx.fillText(m.name, x+100, y+16);
+        ctx.font = CONFIG.fonts.label; ctx.fillStyle = CONFIG.palette.textSoft;
+        const dt = new Date(o.ts);
+        ctx.fillText(`Ordered: ${dt.toLocaleString()}`, x+100, y+56);
+        const btn = button("Reorder", x+w-110, y+h-44, 96, 36, true);
+        btn._itemId = m.id;
+        buttons.push(btn);
+        y += h + 10;
+      });
+    }
+    buttons.push(button("Back", 16, H-58, 100, 42));
+  }
+
+  let adminInput = { pass: "", stage: "login", form: null, editId: null };
+  function drawAdminLogin() {
+    drawBg();
+    drawHeader("Admin", "Passcode required");
+    buttons = [];
+    drawInputField("Passcode", adminInput.pass, W*0.1, 160, W*0.8);
+    buttons.push(button("Enter", (W-180)/2, 240, 180, 46, true));
+    buttons.push(button("Back", 16, H-58, 100, 42));
+  }
+
+  function drawAdminPanel() {
+    drawBg();
+    drawHeader("Admin panel", "Curate and delight");
+    buttons = [];
+    // List existing items
+    let y = 140;
+    const x = 16, w = W - 32;
+    menu.forEach(m => {
+      const h = 96;
+      ctx.fillStyle = "rgba(36,32,30,0.85)";
+      roundRect(x, y, w, h, 14, true, false);
+      ctx.textAlign = "left"; ctx.textBaseline = "top";
+      ctx.font = CONFIG.fonts.title; ctx.fillStyle = CONFIG.palette.cream;
+      ctx.fillText(m.name, x+16, y+14);
+      ctx.font = CONFIG.fonts.label; ctx.fillStyle = CONFIG.palette.gold;
+      ctx.fillText(`${CONFIG.currency}${m.price.toFixed(2)}`, x+16, y+46);
+      if (m.specialOfferText) {
+        ctx.fillStyle = CONFIG.palette.rose;
+        ctx.fillText(m.specialOfferText, x+160, y+46);
+      }
+      const bEdit = button("Edit", x+w-190, y+h-44, 80, 36);
+      bEdit._editId = m.id;
+      buttons.push(bEdit);
+      const bDel = button("Delete", x+w-100, y+h-44, 80, 36);
+      bDel._deleteId = m.id;
+      buttons.push(bDel);
+      y += h + 10;
+    });
+    // Add new
+    buttons.push(button("Add dish", (W-180)/2, H-116, 180, 46, true));
+    buttons.push(button("Back", 16, H-58, 100, 42));
+
+    // If editing/adding, show modal
+    if (adminInput.form) drawAdminForm(adminInput.form);
+  }
+
+  function drawAdminForm(form) {
+    const mw = Math.min(W*0.9, 380), mh = Math.min(H*0.7, 520);
+    const mx = (W - mw)/2, my = (H - mh)/2;
+    ctx.fillStyle = "rgba(18,16,15,0.88)";
+    roundRect(mx, my, mw, mh, 16, true, false);
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    ctx.font = CONFIG.fonts.title; ctx.fillStyle = CONFIG.palette.cream;
+    ctx.fillText(form.id ? "Edit dish" : "Add dish", W/2, my+14);
+
+    let y = my + 60;
+    drawInputField("Name", form.name, mx+18, y, mw-36); y += 60;
+    drawTextArea("Description", form.description, mx+18, y, mw-36, 80); y += 96;
+    drawInputField("Price", String(form.price ?? ""), mx+18, y, mw-36, "number"); y += 60;
+    drawInputField("Special offer", form.specialOfferText ?? "", mx+18, y, mw-36); y += 60;
+
+    // Image preview
+    ctx.textAlign = "left"; ctx.textBaseline = "top";
+    ctx.font = CONFIG.fonts.label; ctx.fillStyle = CONFIG.palette.textSoft;
+    ctx.fillText("Image:", mx+18, y);
+    if (form.imageDataUrl) drawImageCircle(form.imageDataUrl, mx+mw-60, y+26, 26);
+    const bUpload = button("Upload image", mx+18, y+26, 140, 36);
+    bUpload._upload = true; buttons.push(bUpload);
+
+    const bSave = button("Save", mx+18, my+mh-54, 110, 40, true);
+    bSave._save = true; buttons.push(bSave);
+    const bCancel = button("Cancel", mx+mw-130, my+mh-54, 110, 40);
+    bCancel._cancel = true; buttons.push(bCancel);
+  }
+
+  function drawGame() {
+    drawBg();
+    drawHeader("Ingredient mouse", "Collect to cook the perfect dinner");
+    buttons = [];
+    // Game world
+    gameUpdate();
+    gameDraw();
+    // Controls pad (for phone)
+    const size = 54;
+    buttons.push(button("◀", 20, H-84, size, size));
+    buttons[buttons.length-1]._pad = "left";
+    buttons.push(button("▲", 20+size+10, H-84-size-10, size, size));
+    buttons[buttons.length-1]._pad = "up";
+    buttons.push(button("▼", 20+size+10, H-84, size, size));
+    buttons[buttons.length-1]._pad = "down";
+    buttons.push(button("▶", 20+size*2+20, H-84, size, size));
+    buttons[buttons.length-1]._pad = "right";
+
+    buttons.push(button("Back", W-120, H-58, 100, 42));
+  }
+
+  // ===== Drawing Components =====
+  function wrapText(text, x, y, maxW, lineH, align="left") {
+    if (!text) return;
+    const words = text.split(" ");
+    let line = "", yy = y;
+    ctx.textAlign = align;
+    words.forEach((w) => {
+      const test = line + w + " ";
+      if (ctx.measureText(test).width > maxW && line !== "") {
+        ctx.fillText(line, align === "center" ? x + maxW/2 : x, yy);
+        line = w + " ";
+        yy += lineH;
+      } else {
+        line = test;
+      }
+    });
+    if (line) ctx.fillText(line, align === "center" ? x + maxW/2 : x, yy);
+  }
+
+  function drawPlateIcon(x, y, r) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = "rgba(247,233,215,0.2)";
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = CONFIG.palette.gold; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, 0, r-6, 0, Math.PI*2); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawImageCircle(dataUrl, x, y, r) {
+    const img = new Image();
+    img.src = dataUrl;
+    img.onload = () => {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(img, x - r, y - r, r*2, r*2);
+      ctx.restore();
+    };
+  }
+
+  function drawImageLarge(dataUrl, cx, cy, w, h) {
+    const img = new Image();
+    img.src = dataUrl;
+    img.onload = () => {
+      const aspect = img.width / img.height;
+      let dw = w, dh = h;
+      if (dw / dh > aspect) dw = dh * aspect; else dh = dw / aspect;
+      ctx.drawImage(img, cx - dw/2, cy - dh/2, dw, dh);
+      // Border
+      ctx.strokeStyle = CONFIG.palette.gold;
+      ctx.lineWidth = 2;
+      roundRect(cx - dw/2 - 6, cy - dh/2 - 6, dw + 12, dh + 12, 12, false, true);
+    };
+  }
+
+  function drawInputField(label, value, x, y, w, type="text") {
+    ctx.textAlign = "left"; ctx.textBaseline = "top";
+    ctx.font = CONFIG.fonts.label; ctx.fillStyle = CONFIG.palette.textSoft;
+    ctx.fillText(label, x, y);
+    ctx.fillStyle = "rgba(36,32,30,0.9)";
+    roundRect(x, y+22, w, 36, 10, true, false);
+    ctx.textBaseline = "middle"; ctx.fillStyle = CONFIG.palette.textLight;
+    ctx.font = CONFIG.fonts.body; ctx.fillText(value || "", x+10, y+40);
+    // Register interactive field bounds for soft keyboard input
+    registerField({label, x, y: y+22, w, h:36, type});
+  }
+
+  function drawTextArea(label, value, x, y, w, h) {
+    ctx.textAlign = "left"; ctx.textBaseline = "top";
+    ctx.font = CONFIG.fonts.label; ctx.fillStyle = CONFIG.palette.textSoft;
+    ctx.fillText(label, x, y);
+    ctx.fillStyle = "rgba(36,32,30,0.9)";
+    roundRect(x, y+22, w, h, 10, true, false);
+    ctx.textBaseline = "top"; ctx.fillStyle = CONFIG.palette.textLight;
+    ctx.font = CONFIG.fonts.body; wrapText(value || "", x+10, y+28, w-20, 20);
+    registerField({label, x, y: y+22, w, h, multiline: true});
+  }
+
+  let fields = [];
+  function registerField(f) { fields.push(f); }
+
+  // Soft keyboard using prompt (simple mobile-friendly fallback)
+  function handleFieldTap(px, py) {
+    for (const f of fields) {
+      if (hit({x:f.x, y:f.y, w:f.w, h:f.h}, px, py)) {
+        const prev = (adminInput.form ? adminInput.form[f.label.toLowerCase().replaceAll(" ", "")] : null)
+                  || (f.label === "Passcode" ? adminInput.pass : "");
+        let promptText = `Enter ${f.label}:`;
+        const input = window.prompt(promptText, String(prev ?? ""));
+        if (input !== null) {
+          if (f.label === "Passcode") adminInput.pass = input.trim();
+          else if (adminInput.form) {
+            const keyMap = {
+              "Name": "name",
+              "Description": "description",
+              "Price": "price",
+              "Special offer": "specialOfferText"
+            };
+            const key = keyMap[f.label] || f.label.toLowerCase().replaceAll(" ", "");
+            adminInput.form[key] = (f.label === "Price") ? parseFloat(input) || 0 : input;
+          }
+          draw(); // refresh
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Image upload handling
+  const imageInput = document.getElementById("imageInput");
+  imageInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      if (adminInput.form) {
+        adminInput.form.imageDataUrl = ev.target.result;
+        draw();
+      }
+    };
+    reader.readAsDataURL(file);
+    imageInput.value = ""; // reset
+  });
+
+  // ===== Game Logic =====
+  const game = {
+    mouse: { x: 60, y: 340, vx: 0, vy: 0, r: 14 },
+    items: [],
+    collected: 0,
+    lastSpawn: 0,
+    soundsReady: false
+  };
+
+  function gameInit() {
+    game.items = [];
+    game.collected = 0;
+  }
+
+  function spawnItem() {
+    const names = ["Cheese", "Tomato", "Basil", "Garlic", "Olive"];
+    const name = names[Math.floor(Math.random()*names.length)];
+    game.items.push({
+      x: Math.random()*(W-80)+40,
+      y: Math.random()*(H-240)+160,
+      r: 10,
+      name,
+      wiggle: Math.random()*Math.PI*2
+    });
+  }
+
+  function gameUpdate() {
+    const speed = 2.0;
+    const m = game.mouse;
+    m.vx = (keys.left?-1:0) + (keys.right?1:0);
+    m.vy = (keys.up?-1:0) + (keys.down?1:0);
+    m.x += m.vx * speed * 3;
+    m.y += m.vy * speed * 3;
+    m.x = Math.max(30, Math.min(W-30, m.x));
+    m.y = Math.max(140, Math.min(H-120, m.y));
+    // spawn
+    const now = performance.now();
+    if (now - game.lastSpawn > 1200 && game.items.length < 6) {
+      spawnItem();
+      game.lastSpawn = now;
+    }
+    // collect
+    game.items = game.items.filter(it => {
+      const dx = it.x - m.x, dy = it.y - m.y;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if (d < it.r + m.r) {
+        game.collected++;
+        playChime();
+        // cute pop
+        popParticles(it.x, it.y, CONFIG.palette.leaf);
+        return false;
+      }
+      it.wiggle += 0.05;
+      return true;
+    });
+  }
+
+  function gameDraw() {
+    // Table surface
+    ctx.fillStyle = "rgba(58, 47, 43, 0.5)";
+    roundRect(16, 132, W-32, H-180, 22, true, false);
+
+    // Mouse
+    const m = game.mouse;
+    ctx.save();
+    ctx.translate(m.x, m.y);
+    ctx.fillStyle = CONFIG.palette.cream;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 16, 10, 0, 0, Math.PI*2);
+    ctx.fill();
+    // Ear
+    ctx.fillStyle = CONFIG.palette.rose;
+    ctx.beginPath(); ctx.arc(10, -10, 5, 0, Math.PI*2); ctx.fill();
+    // Eye
+    ctx.fillStyle = "#333";
+    ctx.beginPath(); ctx.arc(6, -2, 2, 0, Math.PI*2); ctx.fill();
+    // Tail
+    ctx.strokeStyle = CONFIG.palette.rose;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(-12, 2); ctx.quadraticCurveTo(-22, 8, -18, 16); ctx.stroke();
+    ctx.restore();
+
+    // Items
+    game.items.forEach(it => {
+      ctx.save();
+      ctx.translate(it.x, it.y);
+      ctx.fillStyle = CONFIG.palette.leaf;
+      const s = it.r + Math.sin(it.wiggle)*1.5;
+      ctx.beginPath(); ctx.arc(0, 0, s, 0, Math.PI*2); ctx.fill();
+      ctx.font = "12px Inter"; ctx.textAlign="center"; ctx.textBaseline="top";
+      ctx.fillStyle = CONFIG.palette.textLight;
+      ctx.fillText(it.name, 0, s+4);
+      ctx.restore();
+    });
+
+    // HUD
+    ctx.textAlign="left"; ctx.textBaseline="top";
+    ctx.font = CONFIG.fonts.label; ctx.fillStyle = CONFIG.palette.textLight;
+    ctx.fillText(`Ingredients: ${game.collected}`, 24, 140);
+    if (game.collected >= 10) {
+      ctx.textAlign="center";
+      ctx.font = CONFIG.fonts.title;
+      ctx.fillStyle = CONFIG.palette.gold;
+      ctx.fillText("Dinner perfection unlocked ✨", W/2, 140);
+    }
+  }
+
+  // Simple particle pop
+  const particles = [];
+  function popParticles(x, y, color) {
+    for (let i=0; i<16; i++) {
+      particles.push({ x, y, vx:(Math.random()-0.5)*3, vy:(Math.random()-0.5)*3, a:1, color });
+    }
+  }
+  function drawParticles() {
+    particles.forEach(p => {
+      ctx.fillStyle = `rgba(${hexToRgb(p.color)}, ${p.a})`;
+      ctx.fillRect(p.x, p.y, 2, 2);
+      p.x += p.vx; p.y += p.vy; p.a -= 0.02;
+    });
+    for (let i=particles.length-1; i>=0; i--) {
+      if (particles[i].a <= 0) particles.splice(i,1);
+    }
+  }
+  function hexToRgb(hex) {
+    const h = hex.replace("#","");
+    const bigint = parseInt(h, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `${r},${g},${b}`;
+  }
+
+  // Web Audio chime
+  let audioCtx = null;
+  function initAudio() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  function playChime() {
+    initAudio();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(660, audioCtx.currentTime);
+    g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.25);
+    o.connect(g).connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + 0.28);
+  }
+
+  // ===== Order Animation =====
+  let orderAnim = null; // { text, t }
+  function triggerOrderAnimation(text) {
+    orderAnim = { text, t: 0 };
+  }
+  function drawOrderAnimation() {
+    if (!orderAnim) return;
+    orderAnim.t += 1;
+    const t = orderAnim.t;
+    const alpha = Math.max(0, 1 - t/160);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "bold 22px Marcellus";
+    ctx.fillStyle = CONFIG.palette.cream;
+    ctx.fillText(orderAnim.text, W/2, H*0.75);
+    // Floating hearts
+    for (let i = 0; i < 5; i++) {
+      const x = W/2 + Math.sin(t/10 + i) * 60;
+      const y = H*0.75 - t*(0.3 + i*0.02);
+      ctx.fillStyle = `rgba(200,107,107,${alpha})`;
+      drawHeart(x, y, 10 + i);
+    }
+    ctx.restore();
+    if (t > 160) orderAnim = null;
+  }
+
+  // ===== Input Handling =====
+  function handleTap(px, py) {
+    // Field tap first (admin inputs)
+    if (handleFieldTap(px, py)) return;
+
+    // Button taps
+    for (const b of buttons) {
+      if (hit(b, px, py)) {
+        // Virtual pad for game
+        if (b._pad) {
+          keys[b._pad] = true;
+          setTimeout(() => { keys[b._pad] = false; }, 180);
+          return;
+        }
+        if (scene === Scene.HOME) {
+          if (b.text === "Menu") scene = Scene.MENU;
+          else if (b.text === "Favorites") scene = Scene.FAVORITES;
+          else if (b.text === "Order history") scene = Scene.HISTORY;
+          else if (b.text === "Mini-game") { gameInit(); scene = Scene.GAME; }
+          else if (b.text === "Admin") { adminInput.stage = "login"; scene = Scene.ADMIN_LOGIN; }
+          draw(); return;
+        }
+        if (scene === Scene.MENU) {
+          if (b.text === "Back") { scene = Scene.HOME; draw(); return; }
+          if (b._itemId) { selectedItemId = b._itemId; scene = Scene.ITEM; draw(); return; }
+        }
+        if (scene === Scene.ITEM) {
+          if (b.text === "Back to menu") { scene = Scene.MENU; draw(); return; }
+          if (b.text === "Add to favorites") {
+            if (!favorites.includes(selectedItemId)) {
+              favorites.push(selectedItemId); store.set("favorites", favorites);
+              popParticles(W/2, 470, CONFIG.palette.rose);
+            }
+            draw(); return;
+          }
+          if (b.text === "Order now") {
+            const m = menu.find(x => x.id === selectedItemId);
+            orders.push({ id: String(Date.now()), itemId: m.id, ts: Date.now() });
+            store.set("orders", orders);
+            triggerOrderAnimation(CONFIG.loveMessage);
+            draw(); return;
+          }
+        }
+        if (scene === Scene.FAVORITES) {
+          if (b.text === "Back") { scene = Scene.HOME; draw(); return; }
+          if (b._itemId) { selectedItemId = b._itemId; scene = Scene.ITEM; draw(); return; }
+        }
+        if (scene === Scene.HISTORY) {
+          if (b.text === "Back") { scene = Scene.HOME; draw(); return; }
+          if (b._itemId) {
+            orders.push({ id: String(Date.now()), itemId: b._itemId, ts: Date.now() });
+            store.set("orders", orders);
+            triggerOrderAnimation(CONFIG.loveMessage);
+            draw(); return;
+          }
+        }
+        if (scene === Scene.ADMIN_LOGIN) {
+          if (b.text === "Back") { scene = Scene.HOME; draw(); return; }
+          if (b.text === "Enter") {
+            if (adminInput.pass === CONFIG.adminPasscode) {
+              adminInput.stage = "panel"; scene = Scene.ADMIN_PANEL;
+              draw(); return;
+            } else {
+              triggerOrderAnimation("Wrong passcode — try again");
+              draw(); return;
+            }
+          }
+        }
+        if (scene === Scene.ADMIN_PANEL) {
+          if (b.text === "Back") { adminInput.form = null; scene = Scene.HOME; draw(); return; }
+          if (b._editId) {
+            const m = menu.find(x => x.id === b._editId);
+            adminInput.form = { ...m };
+            adminInput.editId = m.id;
+            draw(); return;
+          }
+          if (b._deleteId) {
+            menu = menu.filter(x => x.id !== b._deleteId);
+            store.set("menuItems", menu);
+            favorites = favorites.filter(id => menu.find(m => m.id === id));
+            store.set("favorites", favorites);
+            draw(); return;
+          }
+          if (b.text === "Add dish") {
+            adminInput.form = { id: null, name:"", description:"", price:0, imageDataUrl:null, specialOfferText:"" };
+            adminInput.editId = null;
+            draw(); return;
+          }
+          if (adminInput.form) {
+            if (b._upload) {
+              imageInput.click();
+              return;
+            }
+            if (b._save) {
+              const f = adminInput.form;
+              if (adminInput.editId) {
+                const i = menu.findIndex(x => x.id === adminInput.editId);
+                menu[i] = { ...menu[i], ...f };
+              } else {
+                f.id = String(Date.now());
+                menu.push(f);
+              }
+              store.set("menuItems", menu);
+              adminInput.form = null; adminInput.editId = null;
+              triggerOrderAnimation("Saved ✓");
+              draw(); return;
+            }
+            if (b._cancel) {
+              adminInput.form = null; adminInput.editId = null;
+              draw(); return;
+            }
+          }
+        }
+        if (scene === Scene.GAME) {
+          if (b.text === "Back") { scene = Scene.HOME; draw(); return; }
+        }
+      }
+    }
+  }
+
+  // ===== Main Draw =====
+  function draw() {
+    fields = []; // reset input field registry each frame
+    ctx.clearRect(0, 0, W, H);
+    switch(scene) {
+      case Scene.HOME: drawHome(); break;
+      case Scene.MENU: drawMenu(); break;
+      case Scene.ITEM: drawItem(); break;
+      case Scene.FAVORITES: drawFavorites(); break;
+      case Scene.HISTORY: drawHistory(); break;
+      case Scene.ADMIN_LOGIN: drawAdminLogin(); break;
+      case Scene.ADMIN_PANEL: drawAdminPanel(); break;
+      case Scene.GAME: drawGame(); break;
+    }
+    drawParticles();
+    drawOrderAnimation();
+    requestAnimationFrame(draw);
+  }
+
+  // Start
+  resize();
+  requestAnimationFrame(draw);
+  </script>
+</body>
+</html>
