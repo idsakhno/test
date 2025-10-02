@@ -1,180 +1,88 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Наше меню</title>
-  <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #f9f9f9;
-      --card: #ffffff;
-      --text: #1f1f1f;
-      --muted: #636363;
-      --line: #e6e6e6;
-      --accent: #222222;
-      --accent-weak: #444444;
-      --ok: #0f9d58;
+      --bg: #f9f9f9; --card: #ffffff; --text: #1f1f1f; --muted: #636363; --line: #e6e6e6;
+      --accent: #222222; --accent-weak: #444444;
     }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-    header {
-      position: sticky; top: 0; z-index: 5;
-      background: var(--card);
-      border-bottom: 1px solid var(--line);
-      padding: 14px 16px;
-      display: flex; align-items: center; justify-content: center;
-      font-family: Marcellus, serif; font-size: 20px;
-    }
-    .tap-zone {
-      position: absolute; right: 0; top: 0; width: 64px; height: 44px;
-    }
-    .tabs {
-      display: flex; gap: 8px; padding: 10px 16px;
-      position: sticky; top: 52px; z-index: 4; background: var(--bg);
-      border-bottom: 1px solid var(--line);
-    }
-    .tab {
-      padding: 8px 12px; border-radius: 20px; border: 1px solid var(--line);
-      background: #fff; color: var(--text); font-size: 14px;
-    }
-    .tab.active {
-      border-color: var(--accent); color: #fff; background: var(--accent);
-    }
-    .menu {
-      padding: 12px 16px 84px;
-    }
-    .dish {
-      display: flex; gap: 12px; align-items: center;
-      background: var(--card); border: 1px solid var(--line); border-radius: 12px;
-      padding: 10px; margin-bottom: 12px;
-    }
-    .dish img {
-      width: 92px; height: 92px; border-radius: 8px; object-fit: cover; background: #eee;
-    }
+    body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); }
+    header { position: sticky; top: 0; z-index: 5; background: var(--card); border-bottom: 1px solid var(--line);
+      padding: 14px 16px; display: flex; align-items: center; justify-content: center; font-family: Marcellus, serif; font-size: 20px; }
+    .tap-zone { position: absolute; right: 0; top: 0; width: 64px; height: 44px; }
+    .tabs { display: flex; gap: 8px; padding: 10px 16px; position: sticky; top: 52px; z-index: 4; background: var(--bg); border-bottom: 1px solid var(--line); }
+    .tab { padding: 8px 12px; border-radius: 20px; border: 1px solid var(--line); background: #fff; color: var(--text); font-size: 14px; }
+    .tab.active { border-color: var(--accent); color: #fff; background: var(--accent); }
+    .menu { padding: 12px 16px 88px; }
+    .dish { display: flex; gap: 12px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px; margin-bottom: 12px; }
+    .dish img { width: 92px; height: 92px; border-radius: 8px; object-fit: cover; background: #eee; }
     .dish-info { flex: 1; min-width: 0; }
-    .dish-info h3 {
-      margin: 0 0 4px; font-family: Marcellus, serif; font-size: 18px;
-    }
-    .dish-info p {
-      margin: 0; color: var(--muted); font-size: 13px; line-height: 1.35;
-    }
-    .meta {
-      margin-top: 8px; display: flex; align-items: center; justify-content: space-between;
-    }
+    .dish-info h3 { margin: 0 0 4px; font-family: Marcellus, serif; font-size: 18px; }
+    .dish-info p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.35; }
+    .meta { margin-top: 8px; display: flex; align-items: center; justify-content: space-between; }
     .price { font-weight: 600; }
-    .add-btn {
-      padding: 8px 12px; border-radius: 8px; border: none; background: var(--accent);
-      color: #fff; font-weight: 600;
-    }
+    .add-btn { padding: 8px 12px; border-radius: 8px; border: none; background: var(--accent); color: #fff; font-weight: 600; }
 
-    /* Cart bar */
-    .cart-bar {
-      position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
-      background: var(--accent); color: #fff; padding: 12px 16px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
+    .cart-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--accent); color: #fff; padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between; }
     .cart-bar .summary { font-weight: 600; }
-    .cart-bar button {
-      padding: 8px 12px; border-radius: 8px; border: 1px solid #fff; color: #fff; background: transparent;
-    }
+    .cart-bar button { padding: 8px 12px; border-radius: 8px; border: 1px solid #fff; color: #fff; background: transparent; }
 
-    /* Cart modal */
-    .modal {
-      position: fixed; inset: 0; z-index: 10; display: none;
-      align-items: flex-end; background: rgba(0,0,0,0.35);
-    }
-    .sheet {
-      background: var(--card); border-top-left-radius: 12px; border-top-right-radius: 12px;
-      width: 100%; max-height: 70vh; overflow: auto; padding: 14px 16px;
-      border-top: 1px solid var(--line);
-    }
+    .modal { position: fixed; inset: 0; z-index: 10; display: none; align-items: flex-end; background: rgba(0,0,0,0.35); }
+    .sheet { background: var(--card); border-top-left-radius: 12px; border-top-right-radius: 12px; width: 100%; max-height: 70vh; overflow: auto; padding: 14px 16px; border-top: 1px solid var(--line); }
     .sheet h2 { margin: 4px 0 10px; font-family: Marcellus, serif; }
-    .cart-item {
-      display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center;
-      padding: 8px 0; border-bottom: 1px solid var(--line);
-    }
-    .qty {
-      display: inline-flex; align-items: center; gap: 8px;
-      border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px;
-    }
-    .qty button {
-      border: none; background: transparent; font-size: 18px; line-height: 1; padding: 2px 6px; cursor: pointer;
-    }
-    .confirm {
-      margin-top: 12px; width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--accent);
-      color: #fff; font-weight: 700; font-size: 16px;
-    }
+    .cart-item { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+    .qty { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; }
+    .qty button { border: none; background: transparent; font-size: 18px; line-height: 1; padding: 2px 6px; cursor: pointer; }
+    .confirm { margin-top: 12px; width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--accent); color: #fff; font-weight: 700; font-size: 16px; }
     .note { margin-top: 8px; color: var(--muted); font-size: 12px; }
 
-    /* Admin overlay */
-    .overlay {
-      position: fixed; inset: 0; z-index: 20; display: none;
-      align-items: center; justify-content: center; background: rgba(0,0,0,0.45);
-    }
-    .panel {
-      width: 92%; max-width: 440px; background: var(--card); border-radius: 12px; padding: 14px 16px;
-    }
+    .overlay { position: fixed; inset: 0; z-index: 20; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); }
+    .panel { width: 92%; max-width: 440px; background: var(--card); border-radius: 12px; padding: 14px 16px; }
     .panel h3 { margin: 0 0 10px; font-family: Marcellus, serif; }
     .field { margin-bottom: 10px; }
     .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
-    .field input, .field select, .field textarea {
-      width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px;
-      background: #fff; color: var(--text);
-    }
-    .img-preview { width: 100%; height: 160px; border: 1px dashed var(--line); border-radius: 8px;
-      background: #f1f1f1 center/cover no-repeat; margin-bottom: 8px; }
+    .field input, .field select, .field textarea { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; background: #fff; color: var(--text); }
+    .img-preview { width: 100%; height: 160px; border: 1px dashed var(--line); border-radius: 8px; background: #f1f1f1 center/cover no-repeat; margin-bottom: 8px; }
     .row { display: flex; gap: 8px; }
     .row .btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
     .row .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent-weak); }
     .admin-list { margin-top: 10px; border-top: 1px solid var(--line); }
-    .admin-item {
-      display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center;
-      padding: 8px 0; border-bottom: 1px solid var(--line);
-    }
-    .toast {
-      position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%);
-      background: #111; color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 14px; display: none; z-index: 50;
-    }
-    .success { color: var(--ok); font-weight: 700; }
+    .admin-item { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+
+    .toast { position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%); background: #111; color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 14px; display: none; z-index: 50; }
   </style>
 </head>
 <body>
-
   <header>
     Наше меню
-    <!-- секретна зона для входу в адмінку: потрійний тап -->
     <div class="tap-zone" id="tap-zone"></div>
   </header>
 
   <div class="tabs" id="tabs"></div>
-
   <main class="menu" id="menu"></main>
 
-  <!-- Кошик знизу -->
-  <div class="cart-bar" id="cart-bar">
+  <div class="cart-bar">
     <div class="summary">
       <span id="cart-count">0 позицій</span> · <span id="cart-total">0 ₴</span>
     </div>
     <button id="open-cart">Відкрити</button>
   </div>
 
-  <!-- Модальне вікно кошика -->
   <div class="modal" id="cart-modal">
     <div class="sheet">
       <h2>Ваше замовлення</h2>
       <div id="cart-items"></div>
       <button class="confirm" id="confirm-order">Підтвердити замовлення</button>
-      <div class="note">Після підтвердження ви побачите миле повідомлення, а замовлення збережеться в історії на цьому пристрої.</div>
+      <div class="note">Після підтвердження ви побачите повідомлення, а замовлення збережеться в історії на цьому пристрої.</div>
     </div>
   </div>
 
-  <!-- Адмінка -->
   <div class="overlay" id="admin-overlay">
     <div class="panel">
       <h3>Адмін‑панель</h3>
@@ -191,22 +99,22 @@
 
       <div class="field">
         <label>Назва страви</label>
-        <input id="dish-name" placeholder="Наприклад: Тірамісу">
+        <input id="dish-name" placeholder="Наприклад: Тірамісу" />
       </div>
 
       <div class="field">
         <label>Опис</label>
-        <textarea id="dish-desc" rows="3" placeholder="Короткий опис смаку та інгредієнтів"></textarea>
+        <textarea id="dish-desc" rows="3" placeholder="Короткий опис"></textarea>
       </div>
 
       <div class="row">
         <div class="field" style="flex:1">
           <label>Ціна (₴)</label>
-          <input id="dish-price" type="number" step="0.01" placeholder="0.00">
+          <input id="dish-price" type="number" step="0.01" placeholder="0.00" />
         </div>
         <div class="field" style="flex:1">
           <label>Фото</label>
-          <input id="dish-img" type="file" accept="image/*">
+          <input id="dish-img" type="file" accept="image/*" />
         </div>
       </div>
 
@@ -221,44 +129,45 @@
     </div>
   </div>
 
-  <!-- Тости -->
   <div class="toast" id="toast"></div>
 
 <script>
-  // ===== Конфіг =====
-  const CONFIG = {
-    currency: "₴",
-    adminPasscode: "1234",
-    categories: ["Усе","Стартери","Основні","Десерти","Напої"]
-  };
+  // ===== Telegram конфіг =====
+  const TELEGRAM_BOT_TOKEN = "8489808230:AAFY5T_YT3vrCeMuuOVye8yh0xtyWfeXmuk";
+  const TELEGRAM_CHAT_ID = "562276927";
+  function sendTelegramMessage(text) {
+    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text })
+    }).catch(()=>{});
+  }
 
-  // ===== Сховище =====
+  // ===== Конфіг / Сховище =====
+  const CONFIG = { currency: "₴", adminPasscode: "1234", categories: ["Усе","Стартери","Основні","Десерти","Напої"] };
   const store = {
     get(key, def) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch { return def; } },
     set(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
   };
 
   let dishes = store.get("dishes", [
-    { id: "1", name: "Тірамісу", description: "Класичний італійський десерт із ніжним кремом маскарпоне та еспресо.", price: 140, imageDataUrl: null, category: "Десерти" },
+    { id: "1", name: "Тірамісу", description: "Класичний італійський десерт із маскарпоне та еспресо.", price: 140, imageDataUrl: null, category: "Десерти" },
     { id: "2", name: "Різото з грибами", description: "Кремовий рис арборіо з печерицями та пармезаном.", price: 240, imageDataUrl: null, category: "Основні" },
-    { id: "3", name: "Брускета", description: "Запечений хліб із томатами, базиліком і оливковою олією.", price: 110, imageDataUrl: null, category: "Стартери" }
+    { id: "3", name: "Брускета", description: "Запечений хліб із томатами, базиліком та оливковою олією.", price: 110, imageDataUrl: null, category: "Стартери" }
   ]);
   let currentCat = "Усе";
   let cart = store.get("cart", []); // [{id, qty}]
   let orders = store.get("orders", []); // [{items, total, ts}]
 
-  // ===== UI елементи =====
+  // ===== Елементи =====
   const el = (id) => document.getElementById(id);
   const tabsEl = el("tabs");
   const menuEl = el("menu");
-  const cartBarEl = el("cart-bar");
-  const cartCountEl = el("cart-count");
-  const cartTotalEl = el("cart-total");
   const cartModalEl = el("cart-modal");
   const cartItemsEl = el("cart-items");
+  const cartCountEl = el("cart-count");
+  const cartTotalEl = el("cart-total");
   const toastEl = el("toast");
-
-  // Адмін
   const adminOverlayEl = el("admin-overlay");
   const adminListEl = el("admin-list");
   const dishCatEl = el("dish-cat");
@@ -268,7 +177,7 @@
   const dishImgEl = el("dish-img");
   const imgPreviewEl = el("img-preview");
 
-  // ===== Рендер категорій =====
+  // ===== Категорії =====
   function renderTabs() {
     tabsEl.innerHTML = "";
     CONFIG.categories.forEach(cat => {
@@ -280,7 +189,7 @@
     });
   }
 
-  // ===== Рендер меню =====
+  // ===== Меню =====
   function renderMenu() {
     menuEl.innerHTML = "";
     const list = dishes.filter(d => currentCat === "Усе" || d.category === currentCat);
@@ -338,13 +247,9 @@
     renderCartModal();
     cartModalEl.style.display = "flex";
   }
-  function closeCart() {
-    cartModalEl.style.display = "none";
-  }
-  function toggleCart() {
-    if (cartModalEl.style.display === "flex") closeCart();
-    else openCart();
-  }
+  function closeCart() { cartModalEl.style.display = "none"; }
+  el("open-cart").onclick = openCart;
+  cartModalEl.addEventListener("click", (e)=>{ if (e.target === cartModalEl) closeCart(); });
 
   function renderCartModal() {
     cartItemsEl.innerHTML = "";
@@ -377,13 +282,28 @@
     store.set("cart", cart); renderCartModal(); updateCartBar();
   }
 
+  // Підтвердження замовлення + Telegram
+  el("confirm-order").onclick = confirmOrder;
   function confirmOrder() {
     if (cart.length === 0) { showToast("Додайте страви до кошика"); return; }
     const totalSum = cart.reduce((s,i)=>{
       const d = dishes.find(x=>x.id===i.id); return s + (d ? d.price * i.qty : 0);
     },0);
+    const text = "🍽 Нове замовлення!\n\n" +
+      cart.map(i=>{
+        const d = dishes.find(x=>x.id===i.id);
+        return `${d ? d.name : "Страва"} × ${i.qty} = ${(d ? d.price*i.qty : 0).toFixed(2)} ${CONFIG.currency}`;
+      }).join("\n") +
+      `\n\nРазом: ${totalSum.toFixed(2)} ${CONFIG.currency}`;
+
+    // Зберегти локально історію замовлень
     orders.push({ items: cart.slice(), total: totalSum, ts: Date.now() });
     store.set("orders", orders);
+
+    // Надіслати у Telegram
+    sendTelegramMessage(text);
+
+    // Очистити кошик
     cart = []; store.set("cart", cart);
     updateCartBar();
     closeCart();
@@ -399,7 +319,7 @@
     toastTimer = setTimeout(()=>{ toastEl.style.display = "none"; }, 1800);
   }
 
-  // ===== Прихований адмін‑вхід (потрійний тап у верхньому правому куті) =====
+  // ===== Прихований адмін‑вхід (потрійний тап) =====
   const tapZone = document.getElementById("tap-zone");
   let tapCount = 0, tapTimer = null;
   tapZone.addEventListener("click", ()=> {
@@ -414,18 +334,12 @@
     }
   });
 
-  // ===== Адмінка: відкриття/закриття, додавання/редагування/видалення =====
+  // ===== Адмінка =====
   let editingId = null;
 
-  function openAdmin() {
-    adminOverlayEl.style.display = "flex";
-    renderAdminList();
-  }
-  function closeAdmin() {
-    adminOverlayEl.style.display = "none";
-    clearAdminForm();
-  }
-  document.getElementById("close-admin").onclick = closeAdmin;
+  function openAdmin() { adminOverlayEl.style.display = "flex"; renderAdminList(); }
+  function closeAdmin() { adminOverlayEl.style.display = "none"; clearAdminForm(); }
+  el("close-admin").onclick = closeAdmin;
 
   function clearAdminForm() {
     editingId = null;
@@ -435,6 +349,7 @@
     dishPriceEl.value = "";
     dishImgEl.value = "";
     imgPreviewEl.style.backgroundImage = "none";
+    delete imgPreviewEl.dataset.dataUrl;
   }
 
   // Прев’ю фото
@@ -450,7 +365,7 @@
   });
 
   // Збереження страви
-  document.getElementById("save-dish").onclick = () => {
+  el("save-dish").onclick = () => {
     const cat = dishCatEl.value.trim();
     const name = dishNameEl.value.trim();
     const desc = dishDescEl.value.trim();
@@ -477,6 +392,7 @@
 
   function renderAdminList() {
     adminListEl.innerHTML = "<h4 style='margin:10px 0'>Список страв</h4>";
+    if (dishes.length === 0) adminListEl.innerHTML += "<div style='color:#666'>Поки немає жодної страви</div>";
     dishes.forEach(d => {
       const row = document.createElement("div");
       row.className = "admin-item";
@@ -499,7 +415,9 @@
     dishPriceEl.value = d.price ?? "";
     imgPreviewEl.style.backgroundImage = d.imageDataUrl ? `url('${d.imageDataUrl}')` : "none";
     imgPreviewEl.dataset.dataUrl = d.imageDataUrl || "";
+    showToast("Редагування страви");
   };
+
   window.delDish = (id) => {
     if (!confirm("Видалити страву?")) return;
     dishes = dishes.filter(d=>d.id!==id);
@@ -509,14 +427,8 @@
     showToast("Страву видалено");
   };
 
-  // ===== Події UI =====
-  document.getElementById("open-cart").onclick = openCart;
-  cartModalEl.addEventListener("click", (e)=>{ if (e.target === cartModalEl) closeCart(); });
-  document.getElementById("confirm-order").onclick = confirmOrder;
-
   // ===== Старт =====
   renderTabs(); renderMenu();
-
 </script>
 </body>
 </html>
