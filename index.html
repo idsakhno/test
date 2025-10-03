@@ -6,56 +6,47 @@
   <title>Наше меню</title>
   <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --bg: #f9f9f9; --card: #ffffff; --text: #1f1f1f; --muted: #636363; --line: #e6e6e6;
-      --accent: #222222; --accent-weak: #444444;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); }
-    header { position: sticky; top: 0; z-index: 5; background: var(--card); border-bottom: 1px solid var(--line);
-      padding: 14px 16px; display: flex; align-items: center; justify-content: center; font-family: Marcellus, serif; font-size: 20px; }
-    .tap-zone { position: absolute; right: 0; top: 0; width: 64px; height: 44px; }
-    .tabs { display: flex; gap: 8px; padding: 10px 16px; position: sticky; top: 52px; z-index: 4; background: var(--bg); border-bottom: 1px solid var(--line); }
-    .tab { padding: 8px 12px; border-radius: 20px; border: 1px solid var(--line); background: #fff; color: var(--text); font-size: 14px; }
-    .tab.active { border-color: var(--accent); color: #fff; background: var(--accent); }
-    .menu { padding: 12px 16px 88px; }
-    .dish { display: flex; gap: 12px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px; margin-bottom: 12px; }
-    .dish img { width: 92px; height: 92px; border-radius: 8px; object-fit: cover; background: #eee; }
-    .dish-info { flex: 1; min-width: 0; }
-    .dish-info h3 { margin: 0 0 4px; font-family: Marcellus, serif; font-size: 18px; }
-    .dish-info p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.35; }
-    .meta { margin-top: 8px; display: flex; align-items: center; justify-content: space-between; }
-    .price { font-weight: 600; }
-    .add-btn { padding: 8px 12px; border-radius: 8px; border: none; background: var(--accent); color: #fff; font-weight: 600; }
-
-    .cart-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--accent); color: #fff; padding: 12px 16px;
-      display: flex; align-items: center; justify-content: space-between; }
-    .cart-bar .summary { font-weight: 600; }
-    .cart-bar button { padding: 8px 12px; border-radius: 8px; border: 1px solid #fff; color: #fff; background: transparent; }
-
-    .modal { position: fixed; inset: 0; z-index: 10; display: none; align-items: flex-end; background: rgba(0,0,0,0.35); }
-    .sheet { background: var(--card); border-top-left-radius: 12px; border-top-right-radius: 12px; width: 100%; max-height: 70vh; overflow: auto; padding: 14px 16px; border-top: 1px solid var(--line); }
-    .sheet h2 { margin: 4px 0 10px; font-family: Marcellus, serif; }
-    .cart-item { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
-    .qty { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; }
-    .qty button { border: none; background: transparent; font-size: 18px; line-height: 1; padding: 2px 6px; cursor: pointer; }
-    .confirm { margin-top: 12px; width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--accent); color: #fff; font-weight: 700; font-size: 16px; }
-    .note { margin-top: 8px; color: var(--muted); font-size: 12px; }
-
-    .overlay { position: fixed; inset: 0; z-index: 20; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); }
-    .panel { width: 92%; max-width: 440px; background: var(--card); border-radius: 12px; padding: 14px 16px; }
-    .panel h3 { margin: 0 0 10px; font-family: Marcellus, serif; }
-    .field { margin-bottom: 10px; }
-    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
-    .field input, .field select, .field textarea { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; background: #fff; color: var(--text); }
-    .img-preview { width: 100%; height: 160px; border: 1px dashed var(--line); border-radius: 8px; background: #f1f1f1 center/cover no-repeat; margin-bottom: 8px; }
-    .row { display: flex; gap: 8px; }
-    .row .btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
-    .row .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent-weak); }
-    .admin-list { margin-top: 10px; border-top: 1px solid var(--line); }
-    .admin-item { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
-
-    .toast { position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%); background: #111; color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 14px; display: none; z-index: 50; }
+    :root { --bg:#f9f9f9; --card:#fff; --text:#1f1f1f; --muted:#636363; --line:#e6e6e6; --accent:#222; --accent-weak:#444; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+    header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:center;justify-content:center;font-family:Marcellus,serif;font-size:20px}
+    .tap-zone{position:absolute;right:0;top:0;width:64px;height:44px}
+    .tabs{display:flex;gap:8px;padding:10px 16px;position:sticky;top:52px;z-index:4;background:var(--bg);border-bottom:1px solid var(--line)}
+    .tab{padding:8px 12px;border-radius:20px;border:1px solid var(--line);background:#fff;color:var(--text);font-size:14px}
+    .tab.active{border-color:var(--accent);color:#fff;background:var(--accent)}
+    .menu{padding:12px 16px 88px}
+    .dish{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:12px}
+    .dish img{width:92px;height:92px;border-radius:8px;object-fit:cover;background:#eee}
+    .dish-info{flex:1;min-width:0}
+    .dish-info h3{margin:0 0 4px;font-family:Marcellus,serif;font-size:18px}
+    .dish-info p{margin:0;color:var(--muted);font-size:13px;line-height:1.35}
+    .meta{margin-top:8px;display:flex;align-items:center;justify-content:space-between}
+    .price{font-weight:600}
+    .add-btn{padding:8px 12px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:600}
+    .cart-bar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--accent);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+    .cart-bar .summary{font-weight:600}
+    .cart-bar button{padding:8px 12px;border-radius:8px;border:1px solid #fff;color:#fff;background:transparent}
+    .modal{position:fixed;inset:0;z-index:10;display:none;align-items:flex-end;background:rgba(0,0,0,0.35)}
+    .sheet{background:var(--card);border-top-left-radius:12px;border-top-right-radius:12px;width:100%;max-height:70vh;overflow:auto;padding:14px 16px;border-top:1px solid var(--line)}
+    .sheet h2{margin:4px 0 10px;font-family:Marcellus,serif}
+    .cart-item{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+    .qty{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+    .qty button{border:none;background:transparent;font-size:18px;line-height:1;padding:2px 6px;cursor:pointer}
+    .confirm{margin-top:12px;width:100%;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:16px}
+    .note{margin-top:8px;color:var(--muted);font-size:12px}
+    .overlay{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.45)}
+    .panel{width:92%;max-width:440px;background:var(--card);border-radius:12px;padding:14px 16px}
+    .panel h3{margin:0 0 10px;font-family:Marcellus,serif}
+    .field{margin-bottom:10px}
+    .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+    .field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff;color:var(--text)}
+    .img-preview{width:100%;height:160px;border:1px dashed var(--line);border-radius:8px;background:#f1f1f1 center/cover no-repeat;margin-bottom:8px}
+    .row{display:flex;gap:8px}
+    .row .btn{flex:1;padding:10px;border-radius:8px;border:1px solid var(--line);background:#fff}
+    .row .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent-weak)}
+    .admin-list{margin-top:10px;border-top:1px solid var(--line)}
+    .admin-item{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+    .toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 12px;border-radius:8px;font-size:14px;display:none;z-index:50}
   </style>
 </head>
 <body>
@@ -69,7 +60,7 @@
 
   <div class="cart-bar">
     <div class="summary">
-      <span id="cart-count">0 позицій</span> · <span id="cart-total">0 ₴</span>
+      <span id="cart-count">0 позицій</span> · <span id="cart-total">0 💋</span>
     </div>
     <button id="open-cart">Відкрити</button>
   </div>
@@ -79,7 +70,7 @@
       <h2>Ваше замовлення</h2>
       <div id="cart-items"></div>
       <button class="confirm" id="confirm-order">Підтвердити замовлення</button>
-      <div class="note">Після підтвердження ви побачите повідомлення, а замовлення збережеться в історії на цьому пристрої.</div>
+      <div class="note">Після підтвердження прийде повідомлення в Telegram, а замовлення збережеться у хмарі.</div>
     </div>
   </div>
 
@@ -109,8 +100,8 @@
 
       <div class="row">
         <div class="field" style="flex:1">
-          <label>Ціна (₴)</label>
-          <input id="dish-price" type="number" step="0.01" placeholder="0.00" />
+          <label>Ціна (у 💋)</label>
+          <input id="dish-price" type="number" step="1" placeholder="0" />
         </div>
         <div class="field" style="flex:1">
           <label>Фото</label>
@@ -131,304 +122,313 @@
 
   <div class="toast" id="toast"></div>
 
-<script>
-  // ===== Telegram конфіг =====
-  const TELEGRAM_BOT_TOKEN = "8489808230:AAFY5T_YT3vrCeMuuOVye8yh0xtyWfeXmuk";
-  const TELEGRAM_CHAT_ID = "562276927";
-  function sendTelegramMessage(text) {
-    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text })
-    }).catch(()=>{});
-  }
-
-  // ===== Конфіг / Сховище =====
-  const CONFIG = { currency: "₴", adminPasscode: "1234", categories: ["Усе","Стартери","Основні","Десерти","Напої"] };
-  const store = {
-    get(key, def) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch { return def; } },
-    set(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
-  };
-
-  let dishes = store.get("dishes", [
-    { id: "1", name: "Тірамісу", description: "Класичний італійський десерт із маскарпоне та еспресо.", price: 140, imageDataUrl: null, category: "Десерти" },
-    { id: "2", name: "Різото з грибами", description: "Кремовий рис арборіо з печерицями та пармезаном.", price: 240, imageDataUrl: null, category: "Основні" },
-    { id: "3", name: "Брускета", description: "Запечений хліб із томатами, базиліком та оливковою олією.", price: 110, imageDataUrl: null, category: "Стартери" }
-  ]);
-  let currentCat = "Усе";
-  let cart = store.get("cart", []); // [{id, qty}]
-  let orders = store.get("orders", []); // [{items, total, ts}]
-
-  // ===== Елементи =====
-  const el = (id) => document.getElementById(id);
-  const tabsEl = el("tabs");
-  const menuEl = el("menu");
-  const cartModalEl = el("cart-modal");
-  const cartItemsEl = el("cart-items");
-  const cartCountEl = el("cart-count");
-  const cartTotalEl = el("cart-total");
-  const toastEl = el("toast");
-  const adminOverlayEl = el("admin-overlay");
-  const adminListEl = el("admin-list");
-  const dishCatEl = el("dish-cat");
-  const dishNameEl = el("dish-name");
-  const dishDescEl = el("dish-desc");
-  const dishPriceEl = el("dish-price");
-  const dishImgEl = el("dish-img");
-  const imgPreviewEl = el("img-preview");
-
-  // ===== Категорії =====
-  function renderTabs() {
-    tabsEl.innerHTML = "";
-    CONFIG.categories.forEach(cat => {
-      const b = document.createElement("button");
-      b.className = "tab" + (cat === currentCat ? " active" : "");
-      b.textContent = cat;
-      b.onclick = () => { currentCat = cat; renderMenu(); renderTabs(); };
-      tabsEl.appendChild(b);
-    });
-  }
-
-  // ===== Меню =====
-  function renderMenu() {
-    menuEl.innerHTML = "";
-    const list = dishes.filter(d => currentCat === "Усе" || d.category === currentCat);
-    list.forEach(d => {
-      const card = document.createElement("div");
-      card.className = "dish";
-
-      const img = document.createElement("img");
-      img.src = d.imageDataUrl || "https://via.placeholder.com/300x300?text=Фото";
-      card.appendChild(img);
-
-      const info = document.createElement("div");
-      info.className = "dish-info";
-      const h3 = document.createElement("h3"); h3.textContent = d.name;
-      const p = document.createElement("p"); p.textContent = d.description;
-      info.appendChild(h3); info.appendChild(p);
-
-      const meta = document.createElement("div");
-      meta.className = "meta";
-      const price = document.createElement("div");
-      price.className = "price"; price.textContent = `${d.price} ${CONFIG.currency}`;
-      const add = document.createElement("button");
-      add.className = "add-btn"; add.textContent = "Додати";
-      add.onclick = () => addToCart(d.id);
-      meta.appendChild(price); meta.appendChild(add);
-
-      info.appendChild(meta);
-      card.appendChild(info);
-      menuEl.appendChild(card);
-    });
-    updateCartBar();
-  }
-
-  // ===== Кошик =====
-  function addToCart(dishId) {
-    const item = cart.find(i => i.id === dishId);
-    if (item) item.qty += 1;
-    else cart.push({ id: dishId, qty: 1 });
-    store.set("cart", cart);
-    updateCartBar();
-    showToast("Додано до кошика");
-  }
-
-  function updateCartBar() {
-    const totalQty = cart.reduce((s,i)=>s+i.qty,0);
-    const totalSum = cart.reduce((s,i)=>{
-      const d = dishes.find(x=>x.id===i.id);
-      return s + (d ? d.price * i.qty : 0);
-    },0);
-    cartCountEl.textContent = `${totalQty} позицій`;
-    cartTotalEl.textContent = `${totalSum.toFixed(2)} ${CONFIG.currency}`;
-  }
-
-  function openCart() {
-    renderCartModal();
-    cartModalEl.style.display = "flex";
-  }
-  function closeCart() { cartModalEl.style.display = "none"; }
-  el("open-cart").onclick = openCart;
-  cartModalEl.addEventListener("click", (e)=>{ if (e.target === cartModalEl) closeCart(); });
-
-  function renderCartModal() {
-    cartItemsEl.innerHTML = "";
-    if (cart.length === 0) {
-      cartItemsEl.innerHTML = "<div style='color:#666'>Ваш кошик порожній</div>";
-      return;
+  <script type="module">
+    // Telegram
+    const TELEGRAM_BOT_TOKEN = "8489808230:AAFY5T_YT3vrCeMuuOVye8yh0xtyWfeXmuk";
+    const TELEGRAM_CHAT_ID = "562276927";
+    function sendTelegramMessage(text) {
+      fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text })
+      }).catch(()=>{});
     }
-    cart.forEach(i => {
-      const d = dishes.find(x=>x.id===i.id);
-      if (!d) return;
-      const row = document.createElement("div");
-      row.className = "cart-item";
-      row.innerHTML = `
-        <div><strong>${d.name}</strong><br><span style="color:#666">${d.price} ${CONFIG.currency}</span></div>
-        <div class="qty">
-          <button aria-label="менше" onclick="decQty('${i.id}')">−</button>
-          <span>${i.qty}</span>
-          <button aria-label="більше" onclick="incQty('${i.id}')">+</button>
-        </div>
-        <div><strong>${(d.price*i.qty).toFixed(2)} ${CONFIG.currency}</strong></div>
-      `;
-      cartItemsEl.appendChild(row);
-    });
-  }
-  function incQty(id){ const it=cart.find(i=>i.id===id); if(it){ it.qty++; store.set("cart",cart); renderCartModal(); updateCartBar(); }}
-  function decQty(id){
-    const it=cart.find(i=>i.id===id);
-    if(!it) return;
-    it.qty--; if(it.qty<=0) cart = cart.filter(x=>x.id!==id);
-    store.set("cart", cart); renderCartModal(); updateCartBar();
-  }
 
-  // Підтвердження замовлення + Telegram
-  el("confirm-order").onclick = confirmOrder;
-  function confirmOrder() {
-    if (cart.length === 0) { showToast("Додайте страви до кошика"); return; }
-    const totalSum = cart.reduce((s,i)=>{
-      const d = dishes.find(x=>x.id===i.id); return s + (d ? d.price * i.qty : 0);
-    },0);
-    const text = "🍽 Нове замовлення!\n\n" +
-      cart.map(i=>{
-        const d = dishes.find(x=>x.id===i.id);
-        return `${d ? d.name : "Страва"} × ${i.qty} = ${(d ? d.price*i.qty : 0).toFixed(2)} ${CONFIG.currency}`;
-      }).join("\n") +
-      `\n\nРазом: ${totalSum.toFixed(2)} ${CONFIG.currency}`;
+    // Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, deleteDoc } 
+      from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // Зберегти локально історію замовлень
-    orders.push({ items: cart.slice(), total: totalSum, ts: Date.now() });
-    store.set("orders", orders);
-
-    // Надіслати у Telegram
-    sendTelegramMessage(text);
-
-    // Очистити кошик
-    cart = []; store.set("cart", cart);
-    updateCartBar();
-    closeCart();
-    showToast("Ваше замовлення прийнято 💕");
-  }
-
-  // ===== Тости =====
-  let toastTimer = null;
-  function showToast(msg) {
-    toastEl.textContent = msg;
-    toastEl.style.display = "block";
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=>{ toastEl.style.display = "none"; }, 1800);
-  }
-
-  // ===== Прихований адмін‑вхід (потрійний тап) =====
-  const tapZone = document.getElementById("tap-zone");
-  let tapCount = 0, tapTimer = null;
-  tapZone.addEventListener("click", ()=> {
-    tapCount++;
-    clearTimeout(tapTimer);
-    tapTimer = setTimeout(()=>{ tapCount = 0; }, 1200);
-    if (tapCount >= 3) {
-      tapCount = 0;
-      const pass = prompt("Введіть пароль адміна:");
-      if (pass === CONFIG.adminPasscode) openAdmin();
-      else showToast("Невірний пароль");
-    }
-  });
-
-  // ===== Адмінка =====
-  let editingId = null;
-
-  function openAdmin() { adminOverlayEl.style.display = "flex"; renderAdminList(); }
-  function closeAdmin() { adminOverlayEl.style.display = "none"; clearAdminForm(); }
-  el("close-admin").onclick = closeAdmin;
-
-  function clearAdminForm() {
-    editingId = null;
-    dishCatEl.value = "Стартери";
-    dishNameEl.value = "";
-    dishDescEl.value = "";
-    dishPriceEl.value = "";
-    dishImgEl.value = "";
-    imgPreviewEl.style.backgroundImage = "none";
-    delete imgPreviewEl.dataset.dataUrl;
-  }
-
-  // Прев’ю фото
-  dishImgEl.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      imgPreviewEl.style.backgroundImage = `url('${ev.target.result}')`;
-      imgPreviewEl.dataset.dataUrl = ev.target.result;
+    // Ваш firebaseConfig
+    const firebaseConfig = {
+      apiKey: "AIzaSyBczsph-DUsgUcrLjEMh4bORONbcaMUJIY",
+      authDomain: "menu-cb213.firebaseapp.com",
+      projectId: "menu-cb213",
+      storageBucket: "menu-cb213.firebasestorage.app",
+      messagingSenderId: "207944156439",
+      appId: "1:207944156439:web:025c453ca8ce7f5d09e352"
     };
-    reader.readAsDataURL(file);
-  });
 
-  // Збереження страви
-  el("save-dish").onclick = () => {
-    const cat = dishCatEl.value.trim();
-    const name = dishNameEl.value.trim();
-    const desc = dishDescEl.value.trim();
-    const price = parseFloat(dishPriceEl.value);
-    const dataUrl = imgPreviewEl.dataset.dataUrl || null;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    if (!name || isNaN(price)) { showToast("Заповніть назву і ціну"); return; }
+    // Колекції
+    const dishesRef = collection(db, "dishes");
+    const ordersRef = collection(db, "orders");
 
-    if (editingId) {
-      const i = dishes.findIndex(d=>d.id===editingId);
-      if (i >= 0) {
-        dishes[i] = { ...dishes[i], name, description: desc, price, category: cat, imageDataUrl: dataUrl ?? dishes[i].imageDataUrl };
-      }
-      showToast("Страву оновлено");
-    } else {
-      dishes.push({ id: String(Date.now()), name, description: desc, price, imageDataUrl: dataUrl, category: cat });
-      showToast("Страву збережено");
+    // Конфіг (валюта — поцілунки)
+    const CONFIG = { currency: "💋", adminPasscode: "1234", categories: ["Усе","Стартери","Основні","Десерти","Напої"] };
+
+    // Стан
+    let dishes = [];         // з Firestore
+    let currentCat = "Усе";
+    let cart = [];           // локально (тимчасово)
+
+    // Елементи
+    const el = (id) => document.getElementById(id);
+    const tabsEl = el("tabs");
+    const menuEl = el("menu");
+    const cartModalEl = el("cart-modal");
+    const cartItemsEl = el("cart-items");
+    const cartCountEl = el("cart-count");
+    const cartTotalEl = el("cart-total");
+    const toastEl = el("toast");
+    const adminOverlayEl = el("admin-overlay");
+    const adminListEl = el("admin-list");
+    const dishCatEl = el("dish-cat");
+    const dishNameEl = el("dish-name");
+    const dishDescEl = el("dish-desc");
+    const dishPriceEl = el("dish-price");
+    const dishImgEl = el("dish-img");
+    const imgPreviewEl = el("img-preview");
+
+    // Рендер вкладок
+    function renderTabs() {
+      tabsEl.innerHTML = "";
+      CONFIG.categories.forEach(cat => {
+        const b = document.createElement("button");
+        b.className = "tab" + (cat === currentCat ? " active" : "");
+        b.textContent = cat;
+        b.onclick = () => { currentCat = cat; renderMenu(); renderTabs(); };
+        tabsEl.appendChild(b);
+      });
     }
-    store.set("dishes", dishes);
-    clearAdminForm();
-    renderAdminList();
-    renderMenu();
-  };
 
-  function renderAdminList() {
-    adminListEl.innerHTML = "<h4 style='margin:10px 0'>Список страв</h4>";
-    if (dishes.length === 0) adminListEl.innerHTML += "<div style='color:#666'>Поки немає жодної страви</div>";
-    dishes.forEach(d => {
-      const row = document.createElement("div");
-      row.className = "admin-item";
-      row.innerHTML = `
-        <div><strong>${d.name}</strong><br><span style="color:#666">${d.category}</span></div>
-        <button class="btn" onclick="editDish('${d.id}')">Редагувати</button>
-        <button class="btn" onclick="delDish('${d.id}')">Видалити</button>
-      `;
-      adminListEl.appendChild(row);
+    // Рендер меню
+    function renderMenu() {
+      menuEl.innerHTML = "";
+      const list = dishes.filter(d => currentCat === "Усе" || d.category === currentCat);
+      list.forEach(d => {
+        const card = document.createElement("div");
+        card.className = "dish";
+
+        const img = document.createElement("img");
+        img.src = d.imageDataUrl || "https://via.placeholder.com/300x300?text=Фото";
+        card.appendChild(img);
+
+        const info = document.createElement("div");
+        info.className = "dish-info";
+        const h3 = document.createElement("h3"); h3.textContent = d.name;
+        const p = document.createElement("p"); p.textContent = d.description || "";
+        info.appendChild(h3); info.appendChild(p);
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        const price = document.createElement("div");
+        price.className = "price"; price.textContent = `${d.price} ${CONFIG.currency}`;
+        const add = document.createElement("button");
+        add.className = "add-btn"; add.textContent = "Додати";
+        add.onclick = () => addToCart(d.id);
+        meta.appendChild(price); meta.appendChild(add);
+
+        info.appendChild(meta);
+        card.appendChild(info);
+        menuEl.appendChild(card);
+      });
+      updateCartBar();
+    }
+
+    // Кошик
+    function addToCart(dishId) {
+      const item = cart.find(i => i.id === dishId);
+      if (item) item.qty += 1;
+      else cart.push({ id: dishId, qty: 1 });
+      updateCartBar();
+      showToast("Додано до кошика");
+    }
+
+    function updateCartBar() {
+      const totalQty = cart.reduce((s,i)=>s+i.qty,0);
+      const totalSum = cart.reduce((s,i)=>{
+        const d = dishes.find(x=>x.id===i.id);
+        return s + (d ? d.price * i.qty : 0);
+      },0);
+      cartCountEl.textContent = `${totalQty} позицій`;
+      cartTotalEl.textContent = `${totalSum.toFixed(0)} ${CONFIG.currency}`;
+    }
+
+    function openCart() { renderCartModal(); cartModalEl.style.display = "flex"; }
+    function closeCart() { cartModalEl.style.display = "none"; }
+    el("open-cart").onclick = openCart;
+    cartModalEl.addEventListener("click", (e)=>{ if (e.target === cartModalEl) closeCart(); });
+
+    function renderCartModal() {
+      cartItemsEl.innerHTML = "";
+      if (cart.length === 0) {
+        cartItemsEl.innerHTML = "<div style='color:#666'>Ваш кошик порожній</div>";
+        return;
+      }
+      cart.forEach(i => {
+        const d = dishes.find(x=>x.id===i.id);
+        if (!d) return;
+        const row = document.createElement("div");
+        row.className = "cart-item";
+        row.innerHTML = `
+          <div><strong>${d.name}</strong><br><span style="color:#666">${d.price} ${CONFIG.currency}</span></div>
+          <div class="qty">
+            <button aria-label="менше">−</button>
+            <span>${i.qty}</span>
+            <button aria-label="більше">+</button>
+          </div>
+          <div><strong>${(d.price*i.qty).toFixed(0)} ${CONFIG.currency}</strong></div>
+        `;
+        const minusBtn = row.querySelectorAll("button")[0];
+        const plusBtn = row.querySelectorAll("button")[1];
+        minusBtn.onclick = () => { i.qty--; if(i.qty<=0) cart = cart.filter(x=>x.id!==i.id); renderCartModal(); updateCartBar(); };
+        plusBtn.onclick = () => { i.qty++; renderCartModal(); updateCartBar(); };
+        cartItemsEl.appendChild(row);
+      });
+    }
+
+    // Підтвердження замовлення (Firestore + Telegram)
+    el("confirm-order").onclick = async () => {
+      if (cart.length === 0) { showToast("Додайте страви до кошика"); return; }
+      const totalSum = cart.reduce((s,i)=>{
+        const d = dishes.find(x=>x.id===i.id); return s + (d ? d.price * i.qty : 0);
+      },0);
+
+      const text = "🍽 Нове замовлення!\n\n" +
+        cart.map(i=>{
+          const d = dishes.find(x=>x.id===i.id);
+          return `${d ? d.name : "Страва"} × ${i.qty} = ${(d ? d.price*i.qty : 0).toFixed(0)} ${CONFIG.currency}`;
+        }).join("\n") +
+        `\n\nРазом: ${totalSum.toFixed(0)} ${CONFIG.currency}`;
+
+      // Запис у Firestore
+      await addDoc(ordersRef, { items: cart.map(i=>({ id:i.id, qty:i.qty })), total: totalSum, ts: Date.now() });
+
+      // Telegram
+      sendTelegramMessage(text);
+
+      // Очистити кошик
+      cart = [];
+      updateCartBar();
+      closeCart();
+      showToast("Ваше замовлення прийнято 💕");
+    };
+
+    // Тости
+    let toastTimer = null;
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.style.display = "block";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=>{ toastEl.style.display = "none"; }, 1800);
+    }
+
+    // Прихований адмін‑вхід (потрійний тап)
+    const tapZone = document.getElementById("tap-zone");
+    let tapCount = 0, tapTimer = null;
+    tapZone.addEventListener("click", ()=> {
+      tapCount++;
+      clearTimeout(tapTimer);
+      tapTimer = setTimeout(()=>{ tapCount = 0; }, 1200);
+      if (tapCount >= 3) {
+        tapCount = 0;
+        const pass = prompt("Введіть пароль адміна:");
+        if (pass === CONFIG.adminPasscode) openAdmin();
+        else showToast("Невірний пароль");
+      }
     });
-  }
 
-  window.editDish = (id) => {
-    const d = dishes.find(x=>x.id===id);
-    if (!d) return;
-    editingId = id;
-    dishCatEl.value = d.category || "Стартери";
-    dishNameEl.value = d.name || "";
-    dishDescEl.value = d.description || "";
-    dishPriceEl.value = d.price ?? "";
-    imgPreviewEl.style.backgroundImage = d.imageDataUrl ? `url('${d.imageDataUrl}')` : "none";
-    imgPreviewEl.dataset.dataUrl = d.imageDataUrl || "";
-    showToast("Редагування страви");
-  };
+    // Адмінка
+    let editingId = null;
 
-  window.delDish = (id) => {
-    if (!confirm("Видалити страву?")) return;
-    dishes = dishes.filter(d=>d.id!==id);
-    store.set("dishes", dishes);
-    renderAdminList();
-    renderMenu();
-    showToast("Страву видалено");
-  };
+    function openAdmin() { adminOverlayEl.style.display = "flex"; renderAdminList(); }
+    function closeAdmin() { adminOverlayEl.style.display = "none"; clearAdminForm(); }
+    el("close-admin").onclick = closeAdmin;
 
-  // ===== Старт =====
-  renderTabs(); renderMenu();
-</script>
+    function clearAdminForm() {
+      editingId = null;
+      dishCatEl.value = "Стартери";
+      dishNameEl.value = "";
+      dishDescEl.value = "";
+      dishPriceEl.value = "";
+      dishImgEl.value = "";
+      imgPreviewEl.style.backgroundImage = "none";
+      delete imgPreviewEl.dataset.dataUrl;
+    }
+
+    // Прев’ю фото
+    dishImgEl.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        imgPreviewEl.style.backgroundImage = `url('${ev.target.result}')`;
+        imgPreviewEl.dataset.dataUrl = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Збереження/оновлення страви у Firestore
+    el("save-dish").onclick = async () => {
+      const cat = dishCatEl.value.trim();
+      const name = dishNameEl.value.trim();
+      const desc = dishDescEl.value.trim();
+      const price = parseFloat(dishPriceEl.value);
+      const dataUrl = imgPreviewEl.dataset.dataUrl || null;
+
+      if (!name || isNaN(price)) { showToast("Заповніть назву і ціну (у 💋)"); return; }
+
+      const payload = { name, description: desc, price: Math.round(price), imageDataUrl: dataUrl, category: cat };
+
+      if (editingId) {
+        await setDoc(doc(db, "dishes", editingId), { id: editingId, ...payload });
+        showToast("Страву оновлено");
+      } else {
+        const ref = await addDoc(dishesRef, payload);
+        await setDoc(doc(db, "dishes", ref.id), { id: ref.id, ...payload }); // збережемо id в документі
+        showToast("Страву збережено");
+      }
+      clearAdminForm();
+      // onSnapshot сам оновить меню та адмін‑список
+    };
+
+    async function delDish(id) {
+      if (!confirm("Видалити страву?")) return;
+      await deleteDoc(doc(db, "dishes", id));
+      showToast("Страву видалено");
+    }
+    window.delDish = delDish;
+
+    function renderAdminList() {
+      adminListEl.innerHTML = "<h4 style='margin:10px 0'>Список страв</h4>";
+      if (dishes.length === 0) adminListEl.innerHTML += "<div style='color:#666'>Поки немає жодної страви</div>";
+      dishes.forEach(d => {
+        const row = document.createElement("div");
+        row.className = "admin-item";
+        row.innerHTML = `
+          <div><strong>${d.name}</strong><br><span style="color:#666">${d.category}</span></div>
+          <button class="btn" onclick="editDish('${d.id}')">Редагувати</button>
+          <button class="btn" onclick="delDish('${d.id}')">Видалити</button>
+        `;
+        adminListEl.appendChild(row);
+      });
+    }
+
+    window.editDish = (id) => {
+      const d = dishes.find(x=>x.id===id);
+      if (!d) return;
+      editingId = id;
+      dishCatEl.value = d.category || "Стартери";
+      dishNameEl.value = d.name || "";
+      dishDescEl.value = d.description || "";
+      dishPriceEl.value = d.price ?? "";
+      imgPreviewEl.style.backgroundImage = d.imageDataUrl ? `url('${d.imageDataUrl}')` : "none";
+      imgPreviewEl.dataset.dataUrl = d.imageDataUrl || "";
+      showToast("Редагування страви");
+    };
+
+    // Live оновлення меню з Firestore
+    onSnapshot(dishesRef, (snapshot) => {
+      dishes = snapshot.docs.map(doc => doc.data());
+      renderTabs(); renderMenu();
+      renderAdminList();
+    });
+
+    // Стартовий рендер
+    renderTabs(); renderMenu();
+  </script>
 </body>
 </html>
